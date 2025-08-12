@@ -6,6 +6,8 @@ export default function ProductForm({ onProductoAgregado }) {
   const [precio, setPrecio] = useState('');
   const [cantidad, setCantidad] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  // Nuevo estado para la URL de la imagen
+  const [imagenUrl, setImagenUrl] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,17 +16,20 @@ export default function ProductForm({ onProductoAgregado }) {
       const res = await fetch('http://localhost:8000/api/productos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, categoria, precio, cantidad, descripcion }),
+        // Se añade la nueva variable 'imagenUrl' al body de la petición
+        body: JSON.stringify({ nombre, categoria, precio, cantidad, descripcion, imagen_url: imagenUrl }),
       });
 
       if (res.ok) {
         const nuevo = await res.json();
         onProductoAgregado(nuevo);
+        // Limpiamos todos los campos del formulario, incluyendo el nuevo
         setNombre('');
         setCategoria('');
         setPrecio('');
         setCantidad('');
         setDescripcion('');
+        setImagenUrl('');
       }
     } catch (error) {
       console.error('Error al agregar producto:', error);
@@ -36,8 +41,8 @@ export default function ProductForm({ onProductoAgregado }) {
       onSubmit={handleSubmit}
       className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-xl"
     >
-      <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">
-        📦 Agregar nuevo producto
+      <h2 className="text-3xl font-extrabold mb-8 text-center text-gray-800 dark:text-gray-100">
+        ➕ Agregar nuevo producto
       </h2>
 
       {/* Nombre */}
@@ -78,6 +83,15 @@ export default function ProductForm({ onProductoAgregado }) {
         onChange={(e) => setCantidad(e.target.value)}
         className="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
         required
+      />
+
+      {/* URL de la imagen */}
+      <input
+        type="text"
+        placeholder="URL de la imagen (opcional)"
+        value={imagenUrl}
+        onChange={(e) => setImagenUrl(e.target.value)}
+        className="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
       />
 
       {/* Descripción */}

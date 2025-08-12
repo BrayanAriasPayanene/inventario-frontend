@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Definición de variables para colores */
+:root {
+  --color-bg-dark: #121212;
+  --color-card-dark: #1e1e1e;
+  --color-text-dark: #f5f5f5;
+  --color-accent: #007bff;
+}
+
+.dark {
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-dark);
+}
