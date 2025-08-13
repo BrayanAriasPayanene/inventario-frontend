@@ -1,14 +1,21 @@
-// src/App.jsx
-import React from 'react';
-import Home from './pages/Home';
-import Layout from './components/Layout';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Inicio from "./pages/Inicio";
+import Reportes from "./pages/Reportes";
+import Inventario from "./pages/Inventario";
+import Configuracion from "./pages/Configuracion"; // 👈 Importar
 
-function App() {
+export default function App() {
   return (
-    <Layout>
-      <Home />
-    </Layout>
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Inicio />} />
+          <Route path="/reportes" element={<Reportes />} />
+          <Route path="/inventario" element={<Inventario />} />
+          <Route path="/configuracion" element={<Configuracion />} /> {/* 👈 Agregar */}
+        </Routes>
+      </Layout>
+    </Router>
   );
 }
-
-export default App;
