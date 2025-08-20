@@ -1,149 +1,88 @@
-import React, { useEffect, useState } from 'react';
+// src/components/ProductList.jsx
+import React, { useEffect, useState } from "react";
 
-export default function ProductList({ reload }) {
+export default function ProductList({ reload, onEditar, onEliminar }) {
   const [productos, setProductos] = useState([]);
-  const [editandoId, setEditandoId] = useState(null);
-  const [formData, setFormData] = useState({
-    nombre: '', categoria: '', precio: '', cantidad: '', descripcion: ''
-  });
-  const [imagenUrl, setImagenUrl] = useState('');
 
-  const obtenerProductos = () => {
-    fetch('http://localhost:8000/api/productos')
-      .then(res => res.json())
-      .then(data => setProductos(data))
-      .catch(err => console.error(err));
+  useEffect(() => {
+    fetch("http://localhost:8000/api/productos/")
+      .then((res) => res.json())
+      .then((data) => setProductos(data))
+      .catch((err) => console.error("Error cargando productos:", err));
+  }, [reload]);
+
+  const handleEditar = (e, producto) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onEditar(producto);
   };
 
-  useEffect(() => { obtenerProductos(); }, [reload]);
-
-  const eliminarProducto = async (id) => {
-    try {
-      const res = await fetch(`http://localhost:8000/api/productos/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        obtenerProductos();
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
-  const iniciarEdicion = (producto) => {
-    setEditandoId(producto.id);
-    setFormData({
-      nombre: producto.nombre,
-      categoria: producto.categoria,
-      precio: producto.precio,
-      cantidad: producto.cantidad || '',
-      descripcion: producto.descripcion || ''
-    });
-    setImagenUrl(producto.imagen_url || '');
-  };
-
-  const guardarCambios = async () => {
-    try {
-      const res = await fetch(`http://localhost:8000/api/productos/${editandoId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, imagen_url: imagenUrl }),
-      });
-
-      if (res.ok) {
-        obtenerProductos();
-        setEditandoId(null);
-      }
-    } catch (error) {
-      console.error('Error:', error);
+  const handleEliminar = (e, producto) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // 🔹 Aquí mandamos el producto al padre (Inventario.jsx)
+    if (onEliminar) {
+      onEliminar(producto);
     }
   };
 
   return (
-    <section className="p-4 bg-gray-100 dark:bg-gray-900 min-h-screen font-sans">
-      <h2 className="text-4xl font-extrabold mb-8 text-center text-gray-800 dark:text-gray-100">
-        📦 Productos Destacados
-      </h2>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-8 px-6">
+      {productos.map((producto) => (
+        <div
+          key={producto.id}
+          className="relative bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition"
+        >
+          {/* Imagen */}
+          <div className="flex justify-center items-center bg-gray-100 dark:bg-gray-700 h-48">
+            {producto.imagen_url ? (
+              <img
+                src={producto.imagen_url}
+                alt={producto.nombre}
+                className="w-28 h-auto object-contain"
+                onError={(e) => {
+                  e.currentTarget.src = "/fallback.jpg"; // opcional
+                }}
+              />
+            ) : (
+              <span className="text-gray-400 italic">Sin imagen</span>
+            )}
+          </div>
 
-      {productos.length === 0 ? (
-        <p className="text-center text-gray-600 dark:text-gray-300 text-lg">
-          No hay productos registrados. ¡Agrega uno nuevo!
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {productos.map((prod) => (
-            <div
-              key={prod.id}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700
-                         flex flex-col overflow-hidden transition-shadow duration-200 hover:shadow-xl"
-            >
-              {/* Imagen con tamaño fijo + overflow para que el zoom no sobrepase */}
-              <div className="w-full h-48 overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-gray-700">
-                <img
-                  src={prod.imagen_url || `https://placehold.co/400x400/E5E7EB/4B5563?text=Producto+${prod.id}`}
-                  alt={`Imagen de ${prod.nombre}`}
-                  className="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = 'https://placehold.co/400x400/E5E7EB/4B5563?text=Imagen+no+disponible';
-                  }}
-                />
-              </div>
+          {/* Información */}
+          <div className="p-4 text-center">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+              {producto.nombre}
+            </h3>
 
-              {/* Contenido */}
-              <div className="flex-grow p-4 text-center">
-                {editandoId === prod.id ? (
-                  <>
-                    <input type="text" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                      className="border p-2 mb-2 w-full rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                    <input type="text" value={formData.categoria} onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                      className="border p-2 mb-2 w-full rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                    <input type="number" value={formData.precio} onChange={(e) => setFormData({ ...formData, precio: e.target.value })}
-                      className="border p-2 mb-2 w-full rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                    <input type="number" value={formData.cantidad} onChange={(e) => setFormData({ ...formData, cantidad: e.target.value })}
-                      className="border p-2 mb-2 w-full rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                    <input type="text" value={imagenUrl} onChange={(e) => setImagenUrl(e.target.value)}
-                      placeholder="URL de la imagen"
-                      className="border p-2 mb-2 w-full rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                    <textarea value={formData.descripcion} onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                      className="border p-2 mb-3 w-full rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows="2" />
+            {/* Precio */}
+            <p className="text-xl font-semibold text-red-600">
+              ${Number(producto.precio).toLocaleString()}
+            </p>
 
-                    <div className="flex gap-2">
-                      <button onClick={guardarCambios} className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-semibold">
-                        💾 Guardar
-                      </button>
-                      <button onClick={() => setEditandoId(null)} className="flex-1 bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 font-semibold">
-                        ❌ Cancelar
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{prod.nombre}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{prod.categoria}</p>
-                    <p className="mt-1 text-xl font-extrabold text-indigo-600 dark:text-indigo-400">${prod.precio}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Cantidad: {prod.cantidad}</p>
-                    {prod.descripcion && (
-                      <p className="text-xs italic text-gray-500 dark:text-gray-400 mt-1 line-clamp-3">
-                        {prod.descripcion}
-                      </p>
-                    )}
-
-                    <div className="flex gap-2 mt-4 relative z-10">
-                      <button onClick={() => iniciarEdicion(prod)}
-                        className="flex-1 bg-yellow-500 text-white px-3 py-2 rounded-lg hover:bg-yellow-600 font-semibold">
-                        ✏️ Editar
-                      </button>
-                      <button onClick={() => eliminarProducto(prod.id)}
-                        className="flex-1 bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 font-semibold">
-                        🗑 Eliminar
-                      </button>
-                    </div>
-                  </>
-                )}
+            {/* Botones */}
+            <div className="mt-4 flex flex-col gap-2">
+              <button className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                Añadir al carrito
+              </button>
+              <div className="flex justify-center gap-6 relative z-10">
+                <button
+                  onClick={(e) => handleEditar(e, producto)}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={(e) => handleEliminar(e, producto)}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                >
+                  Eliminar
+                </button>
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      )}
-    </section>
+      ))}
+    </div>
   );
 }

@@ -9,12 +9,12 @@ export default function Inicio() {
       
       {/* Imagen de fondo */}
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center pointer-events-none"
         style={{ backgroundImage: `url(${fondo})` }}
       ></div>
 
       {/* Capa oscura para contraste */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-none"></div>
 
       {/* Contenido */}
       <div className="relative z-10 flex flex-col items-center text-center text-white drop-shadow-lg">
